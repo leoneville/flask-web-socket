@@ -1,3 +1,4 @@
+from typing import Dict
 from ..repository.database import db
 
 class Payment(db.Model):
@@ -9,3 +10,6 @@ class Payment(db.Model):
     bank_payment_id = db.Column(db.Integer, nullable=True)
     qr_code = db.Column(db.String(100), nullable=True)
     expiration_date = db.Column(db.DateTime)
+
+    def to_dict(self) -> Dict:
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
