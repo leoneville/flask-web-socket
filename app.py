@@ -46,7 +46,13 @@ def pix_confirmation():
 
 @app.route("/payments/pix/<int:payment_id>", methods=["GET"])
 def payment_pix_page(payment_id: int):
-    return render_template("payment.html")
+    payment = db.session.execute(db.select(Payment).filter_by(id=payment_id)).scalar_one_or_none()
+    
+    return render_template("payment.html", 
+                           payment_id=payment.id, 
+                           value=payment.value, 
+                           host="http://127.0.0.1:5000", 
+                           qr_code=payment.qr_code)
 
 if __name__ == "__main__":
     app.run(debug=True)
