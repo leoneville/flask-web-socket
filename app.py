@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from flask import Flask, jsonify, request, send_file, render_template
+from flask_cors import CORS
 from flask_socketio import SocketIO
 
 from src.payments.pix import Pix
@@ -12,7 +13,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SECRET_KEY"] = "SECRET_KEY_WEBSOCKET"
 
 db.init_app(app)
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
+CORS(app, supports_credentials=True)
 
 @app.route("/payments/pix", methods=["POST"])
 def create_payment_pix():
@@ -59,12 +61,18 @@ def pix_confirmation():
     
     payment.paid = True
     db.session.commit()
+    socketio.emit(f"payment-confirmed-{payment.id}")
     
     return jsonify({"message": "The payment has been confirmed."})
 
 @app.route("/payments/pix/<int:payment_id>", methods=["GET"])
 def payment_pix_page(payment_id: int):
     payment = db.session.execute(db.select(Payment).filter_by(id=payment_id)).scalar_one_or_none()
+
+    if payment.paid:
+        return render_template("confirmed_payment.html",
+                               payment_id=payment.id, 
+                               value=payment.value)
     
     return render_template("payment.html", 
                            payment_id=payment.id, 
