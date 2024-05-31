@@ -69,6 +69,9 @@ def pix_confirmation():
 def payment_pix_page(payment_id: int):
     payment = db.session.execute(db.select(Payment).filter_by(id=payment_id)).scalar_one_or_none()
 
+    if payment is None:
+        return render_template("404.html")
+
     if payment.paid:
         return render_template("confirmed_payment.html",
                                payment_id=payment.id, 
@@ -80,10 +83,13 @@ def payment_pix_page(payment_id: int):
                            host="http://127.0.0.1:5000", 
                            qr_code=payment.qr_code)
 
-# websockets
 @socketio.on("connect")
 def handle_connect():
     print("Client Connected to the server")
+
+@socketio.on("disconnect")
+def handle_disconnect():
+    print("Client has disconnected to the server")
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
