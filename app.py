@@ -46,14 +46,13 @@ def create_payment_pix():
             value=value, 
             expiration_date=expiration_date,
             bank_payment_id=payment_response["bank_payment_id"],
-            qr_code=payment_response["qr_code_base64"],
-            paid=False
+            qr_code=payment_response["qr_code_base64"]
         )
         
         db.session.add(new_payment)
         db.session.commit()
 
-        return jsonify({"message": "The payment has been created."})
+        return jsonify({"message": "The payment has been created.", "payment_id": new_payment.id})
     
     except HttpMercadoPagoError as exc:
         return {"error": exc.message}, exc.status_code
@@ -74,6 +73,9 @@ def pix_confirmation():
         return jsonify({"message": "Invalid signature"}), 400
     
     data = request.get_json()
+
+    if data.get("action") != "payment.update":
+        return {}, 200
     
     payment = db.session.execute(db.select(Payment).filter_by(bank_payment_id=data.get("data", {}).get("id"))).scalar_one_or_none()
 
@@ -108,7 +110,7 @@ def payment_pix_page(payment_id: int):
     return render_template("payment.html", 
                            payment_id=payment.id, 
                            value=payment.value, 
-                           host="http://127.0.0.1:5000", 
+                           host="https://f21c-177-91-141-153.ngrok-free.app",
                            qr_code=payment.qr_code)
 
 
