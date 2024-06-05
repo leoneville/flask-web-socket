@@ -1,3 +1,6 @@
+import eventlet
+eventlet.monkey_patch()
+
 from datetime import datetime, timedelta, timezone
 import logging
 
