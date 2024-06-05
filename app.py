@@ -110,7 +110,7 @@ def payment_pix_page(payment_id: int):
     return render_template("payment.html", 
                            payment_id=payment.id, 
                            value=payment.value, 
-                           host="https://f21c-177-91-141-153.ngrok-free.app",
+                           host="https://flask-web-socket.onrender.com",
                            qr_code=payment.qr_code)
 
 
