@@ -11,6 +11,7 @@ from src.models.payment import Payment
 from config import Config
 from src.services.mercado_pago import MercadoPago
 from src.utils.mercado_pago import MercadoPagoUtils
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -18,6 +19,8 @@ app.config.from_object(Config)
 db.init_app(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app, supports_credentials=True)
+Migrate(app, db)
+
 
 @app.route("/payments/pix", methods=["POST"])
 def create_payment_pix():
@@ -43,7 +46,8 @@ def create_payment_pix():
             value=value, 
             expiration_date=expiration_date,
             bank_payment_id=payment_response["bank_payment_id"],
-            qr_code=payment_response["qr_code_base64"]
+            qr_code=payment_response["qr_code_base64"],
+            paid=False
         )
         
         db.session.add(new_payment)
