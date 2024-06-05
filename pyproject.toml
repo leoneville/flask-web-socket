@@ -17,6 +17,7 @@ pytest = "^8.2.1"
 mercadopago = "^2.2.1"
 python-dotenv = "^1.0.1"
 flask-migrate = "^4.0.7"
+gunicorn = "^22.0.0"
 
 
 [build-system]
