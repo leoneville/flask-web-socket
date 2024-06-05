@@ -8,7 +8,7 @@ MERCADO_PAGO_SECRET_KEY = os.environ.get("MERCADO_PAGO_SECRET_KEY")
 
 class Config:
     SQLALCHEMY_DATABASE_URI = "sqlite:///database.db"
-    SECRET_KEY = "SECRET_KEY_WEBSOCKET"
+    SECRET_KEY = os.environ.get("SECRET_KEY")
     
     @staticmethod
     def init_app(app):
