@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import logging
 
 from flask import Flask, jsonify, request, send_file, render_template
 from flask_cors import CORS
@@ -9,6 +10,7 @@ from src.repository.database import db
 from src.models.payment import Payment
 from config import Config
 from src.services.mercado_pago import MercadoPago
+from src.utils.mercado_pago import MercadoPagoUtils
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -64,24 +66,27 @@ def get_image(file_name: str):
 
 @app.route("/payments/pix/confirmation", methods=["POST"])
 def pix_confirmation():
+    if not MercadoPagoUtils.validate_signature(request):
+        return jsonify({"message": "Invalid signature"}), 400
+    
     data = request.get_json()
     
-    if "bank_payment_id" not in data and "value" not in data:
-        return jsonify({"message": "Invalid payment data"}), 400
-    
-    payment = Payment.query.filter_by(bank_payment_id=data.get("bank_payment_id")).first()
-    
+    payment = db.session.execute(db.select(Payment).filter_by(bank_payment_id=data.get("data", {}).get("id"))).scalar_one_or_none()
+
     if not payment or payment.paid:
-        return jsonify({"message": "Payment not found"}), 404
+        logging.error({
+            "error":"Pagamento não encontrado!",
+            "request": data
+        })
+        return {}, 200
     
-    if data.get("value") != payment.value:
-        return jsonify({"message": "Invalid payment data"}), 400
-    
+
     payment.paid = True
     db.session.commit()
+
     socketio.emit(f"payment-confirmed-{payment.id}")
-    
-    return jsonify({"message": "The payment has been confirmed."})
+
+    return {}, 200
 
 
 @app.route("/payments/pix/<int:payment_id>", methods=["GET"])
