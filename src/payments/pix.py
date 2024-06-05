@@ -8,7 +8,7 @@ class Pix:
         pass
 
     def create_payment(self, base_dir=""):
-        # criar o pagamento na instituicao financeira
+        
         bank_payment_id = str(uuid.uuid4())
 
         hash_payment = f'hash_payment_{bank_payment_id}'
