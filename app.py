@@ -52,7 +52,13 @@ def create_payment_pix():
         db.session.add(new_payment)
         db.session.commit()
 
-        return jsonify({"message": "The payment has been created.", "payment_id": new_payment.id})
+        return jsonify(
+            {
+                "message": "The payment has been created.", 
+                "payment_id": new_payment.id,
+                "bank_payment_id": payment_response["bank_payment_id"]
+            }
+        )
     
     except HttpMercadoPagoError as exc:
         return {"error": exc.message}, exc.status_code
